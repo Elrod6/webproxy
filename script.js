@@ -1,39 +1,35 @@
 
-function simulate() {
-  const url = document.getElementById("url").value.trim();
+const BACKEND_URL =
+  "https://glorious-goggles-v6pxwww6xjg6hp5pq-3000.app.github.dev";
+
+async function sendRequest() {
+  const urlInput = document.getElementById("urlInput");
   const output = document.getElementById("output");
 
+  const url = urlInput.value.trim();
+
   if (!url) {
-    output.textContent = "Please enter a test URL.";
+    output.textContent = "Please enter a URL.";
     return;
   }
 
-  let parsed;
+  output.textContent = "Contacting WebProxy backend...";
 
   try {
-    parsed = new URL(url);
-  } catch {
-    output.textContent = "Invalid URL. Try https://example.com";
-    return;
-  }
+    const response = await fetch(`${BACKEND_URL}/api/example`);
+    const data = await response.json();
 
-  if (parsed.protocol !== "https:") {
-    output.textContent = "Only HTTPS test URLs are accepted.";
-    return;
-  }
+    if (!response.ok || !data.success) {
+      throw new Error("The backend request failed.");
+    }
 
-  if (parsed.hostname !== "example.com") {
     output.textContent =
-      "This educational simulator only accepts example.com.";
-    return;
+      "Backend connection successful!\n\n" +
+      "Destination: " + data.destination + "\n" +
+      "HTTP Status: " + data.status + "\n\n" +
+      "Website preview:\n" + data.preview;
+  } catch (error) {
+    output.textContent =
+      "Connection error: " + error.message;
   }
-
-  output.innerHTML = `
-    <h3>Request Simulation</h3>
-    <p>Browser: Request created</p>
-    <p>Proxy: Request received</p>
-    <p>Destination: ${parsed.hostname}</p>
-    <p>Status: Simulated successfully</p>
-    <p>No external website was contacted.</p>
-  `;
 }
